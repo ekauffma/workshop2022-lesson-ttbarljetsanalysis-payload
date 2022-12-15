@@ -28,7 +28,7 @@ def set_style():
     plt.rcParams['text.color'] = "222222"
 
 #----------------------------------------------------------------
-def construct_fileset(n_files_max_per_sample, use_xcache=False):
+def construct_fileset(n_files_max_per_sample, use_xcache=False, ntuples_file="ntuples.json"):
 #----------------------------------------------------------------
     # using cross sections from CMS
     # x-secs are in pb
@@ -44,17 +44,17 @@ def construct_fileset(n_files_max_per_sample, use_xcache=False):
     # get the avg scaling factor for datasets because we haven't
     # recovered the original number of events that went into each file
     # the skimming jobs were not 1 to 1
-    with open("ntuples_factors.json") as nf:
-        nfactors_info = json.load(nf)
+#     with open("ntuple_factors.json") as nf:
+#         nfactors_info = json.load(nf)
 
-    nfactors_dic = {}
-    for process in nfactors_info.keys():
-        nfactors_dic[process] = {}
-        for variation in nfactors_info[process].keys():
-            nfactors_dic[process][variation]= nfactors_info[process][variation]["factor"]
+#     nfactors_dic = {}
+#     for process in nfactors_info.keys():
+#         nfactors_dic[process] = {}
+#         for variation in nfactors_info[process].keys():
+#             nfactors_dic[process][variation]= nfactors_info[process][variation]["factor"]
 
     # list of files
-    with open("ntuples.json") as f:
+    with open(ntuples_file) as f:
         file_info = json.load(f)
 
     # process into "fileset" summarizing all info
@@ -64,12 +64,12 @@ def construct_fileset(n_files_max_per_sample, use_xcache=False):
         #    continue  # skip data
         for variation in file_info[process].keys():
             file_list = file_info[process][variation]["files"]
-            if n_files_max_per_sample != -1:
+            if n_files_max_per_sample != -1 and process!= "data":
                 file_list = file_list[:n_files_max_per_sample]  # use partial set of samples
 
             file_paths = [f["path"] for f in file_list]
             #nevts_total = sum([f["nevts"] for f in file_list])
-            nevts_total = sum([f["nevts"] for f in file_list])/nfactors_dic[process][variation]    
+            nevts_total = sum([f["nevts"] for f in file_list])#/nfactors_dic[process][variation]    
             metadata = {"process": process, "variation": variation, "nevts": nevts_total, "xsec": xsec_info[process]}
             fileset.update({f"{process}__{variation}": {"files": file_paths, "metadata": metadata}})
 
@@ -82,7 +82,7 @@ def save_histograms(all_histograms, fileset, filename):
 
     all_histograms += 1e-6  # add minimal event count to all bins to avoid crashes when processing a small number of samples
 
-    pseudo_data = (all_histograms[:, :, "ttbar", "ME_var"] + all_histograms[:, :, "ttbar", "PS_var"]) / 2  + all_histograms[:, :, "wjets", "nominal"]
+    pseudo_data = (all_histograms[:, :, "ttbar", "ME_var"] + all_histograms[:, :, "ttbar", "PS_var"]) / 2 + all_histograms[:, :, "wjets", "nominal"] 
 
     with uproot.recreate(filename) as f:
         for region in ["4j1b", "4j2b"]:
