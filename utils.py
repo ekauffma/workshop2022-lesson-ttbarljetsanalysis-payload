@@ -69,6 +69,7 @@ def construct_fileset(n_files_max_per_sample, use_xcache=False, ntuples_file="nt
     # x-secs are in pb
     xsec_info = {
         "ttbar": 831.76,
+        "single_top_s_chan": 2.0268 + 1.2676,
         "single_atop_t_chan": 26.38,
         "single_top_t_chan": 44.33,
         "single_top_tW": 35.6 + 36.6,
@@ -118,11 +119,11 @@ def save_histograms(all_histograms, fileset, filename, nominal_samples = []):
 
     all_histograms += 1e-6  # add minimal event count to all bins to avoid crashes when processing a small number of samples
 
-    # pseudo_data = (all_histograms[:, :, "ttbar", "ME_var"] + all_histograms[:, :, "ttbar", "PS_var"]) / 2 + all_histograms[:, :, "wjets", "nominal"] 
+    pseudo_data = (all_histograms[:, :, "ttbar", "ME_var"] + all_histograms[:, :, "ttbar", "PS_var"]) / 2 + all_histograms[:, :, "wjets", "nominal"] 
 
     with uproot.recreate(filename) as f:
         for region in ["4j1b", "4j2b"]:
-            # f[f"{region}_pseudodata"] = pseudo_data[120j::hist.rebin(2), region]
+            f[f"{region}_pseudodata"] = pseudo_data[120j::hist.rebin(2), region]
             for sample in nominal_samples:
                 sample_name = sample.split("__")[0]
                 f[f"{region}_{sample_name}"] = all_histograms[120j::hist.rebin(2), region, sample_name, "nominal"]
@@ -137,9 +138,9 @@ def save_histograms(all_histograms, fileset, filename, nominal_samples = []):
                 for variation_name in ["pt_scale_up", "pt_res_up"]:
                     f[f"{region}_{sample_name}_{variation_name}"] = all_histograms[120j::hist.rebin(2), region, sample_name, variation_name]
 
-            # f[f"{region}_ttbar_ME_var"] = all_histograms[120j::hist.rebin(2), region, "ttbar", "ME_var"]
-            # f[f"{region}_ttbar_PS_var"] = all_histograms[120j::hist.rebin(2), region, "ttbar", "PS_var"]
-            # for process in ["ttbar", "wjets"]:
-            #     f[f"{region}_{process}_scaledown"] = all_histograms[120j::hist.rebin(2), region, process, "scaledown"]
-            #     f[f"{region}_{process}_scaleup"] = all_histograms[120j::hist.rebin(2), region, process, "scaleup"]
+            f[f"{region}_ttbar_ME_var"] = all_histograms[120j::hist.rebin(2), region, "ttbar", "ME_var"]
+            f[f"{region}_ttbar_PS_var"] = all_histograms[120j::hist.rebin(2), region, "ttbar", "PS_var"]
+            for process in ["ttbar", "wjets"]:
+                f[f"{region}_{process}_scaledown"] = all_histograms[120j::hist.rebin(2), region, process, "scaledown"]
+                f[f"{region}_{process}_scaleup"] = all_histograms[120j::hist.rebin(2), region, process, "scaleup"]
 

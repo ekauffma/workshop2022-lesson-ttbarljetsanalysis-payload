@@ -213,7 +213,7 @@ class TtbarAnalysis(processor_base):
 # "Fileset" construction and metadata via utils.py file
 # Here, we gather all the required information about the files we want to process: paths to the files and asociated metadata
 # making use of the utils.py code in this repository
-fileset = construct_fileset(N_FILES_MAX_PER_SAMPLE, use_xcache=False, ntuples_file="ntuples_nanoaod.json")
+fileset = construct_fileset(N_FILES_MAX_PER_SAMPLE, use_xcache=False, ntuples_file="ntuples_nanoaod_all.json")
 print(f"processes in fileset: {list(fileset.keys())}")
 t0 = time.time()
 
@@ -236,4 +236,4 @@ if PIPELINE == "coffea":
 
 print(f"\nexecution took {time.time() - t0:.2f} seconds")
 
-save_histograms(all_histograms, fileset, "histograms.root")
+save_histograms(all_histograms, fileset, "histograms_all.root")
